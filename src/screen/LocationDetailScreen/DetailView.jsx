@@ -21,50 +21,29 @@ import moment from "moment";
 import { LinearGradient } from "expo-linear-gradient";
 import RatingComponent from "../../components/RatingComponent";
 import Swiper from "react-native-swiper";
-const data = [
-  {
-    id: 0,
-    title: "Du Thuyền Sài Gòn Với Bữa Tối Trên Tàu Saigon Princess",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/fubnzq6m8wq5qtrrkcc5.webp",
-  },
-  {
-    id: 1,
-    title: "Vé Đài Quan Sát Landmark 81 Skyview",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/su1k3yrudfqoo5kmyfiz.webp",
-  },
-  {
-    id: 2,
-    title: "Vé Teh Dar Show Tại Nhà Hát TP. Hồ Chí Minh",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/gnr4rwvtfhxtcqrmqg95.webp",
-  },
-];
+import MapView, { Marker } from "react-native-maps";
+import data from "../../mock.json";
+
 export default function DetailView() {
   const { params } = useRoute();
   const { id } = params;
-  const [item, setitem] = useState({});
+  const [item, setitem] = useState(null);
   useEffect(() => {
     let item = data.find((item) => item.id === id);
-    if (item) {
-      setitem(item);
-    }
+    setitem(item);
   }, []);
-
+  if (!item) return <Text>Loading...</Text>;
   return (
     <Box h="full" bg="white" p={5} safeArea>
-      <ThumbnailComponent thumbnail={item.thumbnail} />
+      <ThumbnailComponent item={item} />
       <ScrollView mt={5} stickyHeaderIndices={[0]}>
         <Box pb={1} background="white">
-          <Heading size="md">{item.title}</Heading>
+          <Heading size="md">{item.name}</Heading>
         </Box>
         <Stack space={5}>
-          <VisitorInfoComponent />
+          <InfoComponent item={item} />
           <AboutComponent />
+          <MapComponent item={item} />
         </Stack>
         <Box h="10"></Box>
       </ScrollView>
@@ -87,6 +66,44 @@ export default function DetailView() {
   );
 }
 
+function MapComponent({ item }) {
+  const navigation = useNavigation();
+  const location = item.location;
+  location.location.lat = parseFloat(location.location.lat);
+  location.location.lon = parseFloat(location.location.lon);
+  return (
+    <Pressable
+      onPress={() => navigation.navigate("LocationMapView", { location })}
+    >
+      <Heading size="sm" mb={2}>
+        Địa chỉ
+      </Heading>
+      <AspectRatio w="100%" ratio={16 / 9}>
+        <MapView
+          scrollEnabled={false}
+          zoomEnabled={false}
+          pitchEnabled={false}
+          rotateEnabled={false}
+          cacheEnabled={true}
+          initialRegion={{
+            latitude: location.location.lat,
+            longitude: location.location.lon,
+            latitudeDelta: 0.00922,
+            longitudeDelta: 0.01639111111,
+          }}
+        >
+          <Marker
+            coordinate={{
+              latitude: location.location.lat,
+              longitude: location.location.lon,
+            }}
+          />
+        </MapView>
+      </AspectRatio>
+    </Pressable>
+  );
+}
+
 function AboutComponent() {
   const MAX_TEXT_LENGTH = 300;
   const text =
@@ -100,7 +117,7 @@ function AboutComponent() {
   }
   return (
     <Box>
-      <Heading size="sm">About</Heading>
+      <Heading size="sm">Giới thiệu</Heading>
       <Text zIndex={0}>{getText()}</Text>
       {!viewMore && (
         <Box position="absolute" w="full" bottom={0}>
@@ -121,11 +138,11 @@ function AboutComponent() {
   );
 }
 
-function VisitorInfoComponent() {
+function InfoComponent({ item }) {
   return (
     <VStack space={5}>
       <Box>
-        <RatingComponent />
+        <RatingComponent rating={item.review.score} count={item.review.count} />
         <Text>
           Sức chứa tối đa:{" "}
           <Text fontWeight="bold" fontSize="md" color="primary.2">
@@ -139,7 +156,7 @@ function VisitorInfoComponent() {
         <HStack space={5} alignItems="center" justifyContent="center">
           <Box>
             <Heading textAlign="center" size="xl" color="primary.2">
-              {Math.floor(Math.random() * 50000)}
+              {item.count}
             </Heading>
             <Text textAlign="center" color="blueGray.500">
               số người dự định đến
@@ -147,7 +164,7 @@ function VisitorInfoComponent() {
           </Box>
           <Box>
             <Heading textAlign="center" size="xl" color="primary.1">
-              {Math.floor(Math.random() * 50000)}
+              {Math.floor(Math.random() * item.count)}
             </Heading>
             <Text textAlign="center" color="blueGray.500">
               số người ít nhất sẽ đến
@@ -162,13 +179,9 @@ function VisitorInfoComponent() {
   );
 }
 
-function ThumbnailComponent({ thumbnail }) {
+function ThumbnailComponent({ item }) {
   const navigation = useNavigation();
-  const image_urls = [
-    thumbnail,
-    "http://unsplash.it/1000?gravity=center",
-    "http://unsplash.it/1005?gravity=center",
-  ];
+  const image_urls = item.imageUrls;
   return (
     <Box>
       <Pressable
@@ -185,7 +198,7 @@ function ThumbnailComponent({ thumbnail }) {
             autoplay={true}
             autoplayTimeout={2.5}
           >
-            {image_urls?.map((image, index) => (
+            {image_urls.map((image, index) => (
               <Image
                 rounded="3xl"
                 key={index}

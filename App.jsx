@@ -9,6 +9,7 @@ import DashboardScreen from "./src/screen/DashboardScreen";
 import UserAndSettingsScreen from "./src/screen/UserAndSettingsScreen";
 import LocationDetailScreen from "./src/screen/LocationDetailScreen";
 import { AuthContext, AuthContextProvider } from "./src/context/AuthContext";
+import * as Location from "expo-location";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const theme = extendTheme({
 export default function App() {
   useEffect(() => {
     moment.locale("vi");
+    Location.requestForegroundPermissionsAsync();
   }, []);
 
   return (

@@ -3,6 +3,7 @@ import {
   AspectRatio,
   Box,
   Center,
+  FlatList,
   Heading,
   Icon,
   Image,
@@ -16,30 +17,7 @@ import {
 import { AntDesign } from "@native-base/icons";
 import { useNavigation } from "@react-navigation/native";
 import RatingComponent from "../../components/RatingComponent";
-
-const data = [
-  {
-    id: 0,
-    title: "Du Thuyền Sài Gòn Với Bữa Tối Trên Tàu Saigon Princess",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/fubnzq6m8wq5qtrrkcc5.webp",
-  },
-  {
-    id: 1,
-    title: "Vé Đài Quan Sát Landmark 81 Skyview",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/su1k3yrudfqoo5kmyfiz.webp",
-  },
-  {
-    id: 2,
-    title: "Vé Teh Dar Show Tại Nhà Hát TP. Hồ Chí Minh",
-    count: Math.floor(Math.random() * 500),
-    thumbnail:
-      "https://res.klook.com/image/upload/c_fill,w_960,h_460,f_auto/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/gnr4rwvtfhxtcqrmqg95.webp",
-  },
-];
+import data from "../../mock.json";
 
 export default function ExploreScreen() {
   return (
@@ -65,13 +43,15 @@ export default function ExploreScreen() {
         />
       </VStack>
 
-      <ScrollView px={5} mt={5}>
-        <VStack space={5} pb={10}>
-          {data.map((item, id) => (
-            <CardItem key={id} item={item} />
-          ))}
-        </VStack>
-      </ScrollView>
+      <FlatList
+        px={5}
+        mt={5}
+        data={data}
+        renderItem={({ item }) => <CardItem item={item} />}
+        initialNumToRender={10}
+        keyExtractor={(item) => item.id}
+        windowSize={3}
+      />
     </Box>
   );
 }
@@ -80,6 +60,7 @@ const CardItem = ({ item }) => {
   const navigation = useNavigation();
   return (
     <Pressable
+      mb={5}
       onPress={() =>
         navigation.navigate("LocationDetail", {
           screen: "DetailView",
@@ -122,9 +103,12 @@ const CardItem = ({ item }) => {
         </Box>
         <Stack p="4">
           <Heading size="md" ml="-1" isTruncated noOfLines={2}>
-            {item.title}
+            {item.name}
           </Heading>
-          <RatingComponent />
+          <RatingComponent
+            rating={item.review.score}
+            count={item.review.count}
+          />
           <Text fontWeight="400">
             <Text fontWeight="bold" color="primary.1">
               {item.count}

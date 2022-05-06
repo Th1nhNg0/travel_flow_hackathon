@@ -1,11 +1,10 @@
 import { Box, HStack, Icon, Text } from "native-base";
 import { AntDesign } from "@native-base/icons";
 
-export default function RatingComponent() {
-  const star = Math.random() * 6;
+export default function RatingComponent({ rating, count }) {
   const stars = [];
   for (let i = 0; i < 5; i++) {
-    if (i <= Math.floor(star)) {
+    if (i < Math.floor(rating)) {
       stars.push(
         <Icon key={i} as={AntDesign} name="star" size="md" color="yellow.500" />
       );
@@ -26,7 +25,7 @@ export default function RatingComponent() {
       <HStack alignItems="center">
         {stars}
         <Text ml={1} fontWeight="semibold" fontSize="sm" color="blueGray.500">
-          ({Math.round(Math.random() * 1000)} đánh giá)
+          ({count} đánh giá)
         </Text>
       </HStack>
     </Box>
