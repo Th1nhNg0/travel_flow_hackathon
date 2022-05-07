@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   AspectRatio,
   Box,
@@ -9,7 +9,6 @@ import {
   Image,
   Input,
   Pressable,
-  ScrollView,
   Stack,
   Text,
   VStack,
@@ -18,8 +17,28 @@ import { AntDesign } from "@native-base/icons";
 import { useNavigation } from "@react-navigation/native";
 import RatingComponent from "../../components/RatingComponent";
 import data from "../../mock.json";
+import useDebounce from "../../components/useDebounce";
 
 export default function ExploreScreen() {
+  const [search, setsearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+
+  const [filteredData, setfilteredData] = useState(data);
+  const flatListRef = React.useRef();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    setsearch("");
+  }, [navigation]);
+  useEffect(() => {
+    setfilteredData(
+      data.filter((item) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+    flatListRef.current.scrollToOffset({ x: 0, y: 0, animated: true });
+  }, [debouncedSearch]);
+
   return (
     <Box backgroundColor="white" height="full">
       <VStack px={5} w="100%" space={5} alignSelf="center">
@@ -30,6 +49,8 @@ export default function ExploreScreen() {
           p="1"
           fontSize="14"
           backgroundColor="gray.100"
+          onChangeText={(text) => setsearch(text)}
+          value={search}
           InputLeftElement={
             <Icon
               m="2"
@@ -44,9 +65,10 @@ export default function ExploreScreen() {
       </VStack>
 
       <FlatList
+        ref={flatListRef}
         px={5}
         mt={5}
-        data={data}
+        data={filteredData}
         renderItem={({ item }) => <CardItem item={item} />}
         initialNumToRender={10}
         keyExtractor={(item) => item.id}

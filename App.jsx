@@ -8,6 +8,8 @@ import SignInScreen from "./src/screen/SignInScreen";
 import DashboardScreen from "./src/screen/DashboardScreen";
 import UserAndSettingsScreen from "./src/screen/UserAndSettingsScreen";
 import LocationDetailScreen from "./src/screen/LocationDetailScreen";
+import PlanDetailScreen from "./src/screen/PlanDetailScreen";
+
 import { AuthContext, AuthContextProvider } from "./src/context/AuthContext";
 import * as Location from "expo-location";
 
@@ -62,6 +64,13 @@ export default function App() {
                       }}
                       name="LocationDetail"
                       component={LocationDetailScreen}
+                    />
+                    <Stack.Screen
+                      options={{
+                        headerShown: false,
+                      }}
+                      name="PlanDetailScreen"
+                      component={PlanDetailScreen}
                     />
                   </>
                 )}

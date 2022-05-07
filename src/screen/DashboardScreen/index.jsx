@@ -1,10 +1,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
-import { Text, Avatar, View, Icon, Pressable } from "native-base";
+import { Text, Avatar, View, Icon, Pressable, Image, Box } from "native-base";
 import { Feather } from "@native-base/icons";
-import HomeView from "./Home";
-import ExploreScreen from "./ExploreScreen";
+import HomeView from "./HomeView";
+import ExploreView from "./ExploreView";
+import PlansScreen from "./PlansView";
+import NotificationsScreen from "./NotificationsScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -56,7 +58,7 @@ export default function DashboardScreen() {
           },
         }}
         name="Explore"
-        component={ExploreScreen}
+        component={ExploreView}
       />
       <Tab.Screen
         options={{
@@ -79,21 +81,5 @@ export default function DashboardScreen() {
         component={NotificationsScreen}
       />
     </Tab.Navigator>
-  );
-}
-
-function PlansScreen() {
-  return (
-    <View>
-      <Text>Bookmark and planning screen</Text>
-    </View>
-  );
-}
-
-function NotificationsScreen() {
-  return (
-    <View>
-      <Text>NotificationsScreen</Text>
-    </View>
   );
 }

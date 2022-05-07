@@ -55,9 +55,6 @@ export default function DetailView() {
         py={2}
         left={5}
       >
-        <Button flex={1} mr={2} backgroundColor="primary.2" rounded="xl">
-          Tôi dự định đến đây
-        </Button>
         <Button flex={1} ml={2} backgroundColor="primary.1" rounded="xl">
           Thêm vào kế hoạch
         </Button>
@@ -171,7 +168,7 @@ function InfoComponent({ item }) {
             </Text>
           </Box>
         </HStack>
-        <Button rounded="xl" size="md">
+        <Button rounded="xl" size="md" background="primary.2">
           Xem chi tiết
         </Button>
       </VStack>

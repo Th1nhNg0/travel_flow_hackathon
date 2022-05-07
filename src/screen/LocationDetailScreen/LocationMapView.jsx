@@ -36,7 +36,6 @@ export default function LocationMapView() {
               longitude: location.location.lon,
             }}
             title={location.summary}
-            // description="This is a description"
           />
         </MapView>
         <IconButton

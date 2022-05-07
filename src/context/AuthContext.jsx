@@ -8,8 +8,8 @@ export const AuthContext = createContext({
 });
 
 export const AuthContextProvider = ({ children }) => {
-  // const [user, setUser] = useState();
-  const [user, setUser] = useState({ name: "John Doe" });
+  const [user, setUser] = useState();
+  // const [user, setUser] = useState({ name: "John Doe" });
   const login = () => {
     setUser({ name: "John Doe" });
   };
