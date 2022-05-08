@@ -5,6 +5,7 @@ import moment from "moment";
 import "moment/locale/vi";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SignInScreen from "./src/screen/SignInScreen";
+import SignUpScreen from "./src/screen/SignUpScreen";
 import DashboardScreen from "./src/screen/DashboardScreen";
 import UserAndSettingsScreen from "./src/screen/UserAndSettingsScreen";
 import LocationDetailScreen from "./src/screen/LocationDetailScreen";
@@ -38,13 +39,22 @@ export default function App() {
             {({ isLoggedIn }) => (
               <Stack.Navigator initialRouteName="Dashboard">
                 {!isLoggedIn ? (
-                  <Stack.Screen
-                    options={{
-                      headerShown: false,
-                    }}
-                    name="SignIn"
-                    component={SignInScreen}
-                  />
+                  <>
+                    <Stack.Screen
+                      options={{
+                        headerShown: false,
+                      }}
+                      name="SignIn"
+                      component={SignInScreen}
+                    />
+                    <Stack.Screen
+                      options={{
+                        headerShown: false,
+                      }}
+                      name="SignUp"
+                      component={SignUpScreen}
+                    />
+                  </>
                 ) : (
                   <>
                     <Stack.Screen
@@ -56,6 +66,9 @@ export default function App() {
                     />
                     <Stack.Screen
                       name="UserAndSettings"
+                      options={{
+                        headerTitle: "Người dùng và cài đặt",
+                      }}
                       component={UserAndSettingsScreen}
                     />
                     <Stack.Screen

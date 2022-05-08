@@ -4,11 +4,21 @@ import {
   Box,
   FlatList,
   Heading,
+  HStack,
+  Icon,
+  IconButton,
   Image,
   Pressable,
   Text,
+  Modal,
+  FormControl,
+  Input,
+  Button,
+  useDisclose,
+  Actionsheet,
 } from "native-base";
-import React from "react";
+import { useState } from "react";
+import { AntDesign } from "@native-base/icons";
 
 const data = [
   {
@@ -26,9 +36,51 @@ const data = [
 ];
 
 export default function PlansScreen() {
+  const [showModal, setShowModal] = useState(false);
   return (
     <Box px={5} py={3}>
-      <Heading mb={3}>Kế hoạch</Heading>
+      <Modal size="xl" isOpen={showModal} onClose={() => setShowModal(false)}>
+        <Modal.Content maxWidth="400px">
+          <Modal.CloseButton />
+          <Modal.Header>Tạo kế hoạch mới</Modal.Header>
+          <Modal.Body>
+            <FormControl>
+              <FormControl.Label>Tên kế hoạch</FormControl.Label>
+              <Input />
+            </FormControl>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button.Group space={2}>
+              <Button
+                variant="ghost"
+                colorScheme="blueGray"
+                onPress={() => {
+                  setShowModal(false);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                onPress={() => {
+                  setShowModal(false);
+                }}
+              >
+                Tạo
+              </Button>
+            </Button.Group>
+          </Modal.Footer>
+        </Modal.Content>
+      </Modal>
+      <HStack justifyContent="space-between" alignItems="center" mb={5}>
+        <Heading>Kế hoạch</Heading>
+        <IconButton
+          onPress={() => setShowModal(true)}
+          variant="solid"
+          background="primary.1"
+          size="md"
+          icon={<Icon as={AntDesign} name="plus" />}
+        />
+      </HStack>
       <FlatList
         data={data}
         renderItem={({ item }) => <CardItem item={item} />}
@@ -40,6 +92,7 @@ export default function PlansScreen() {
 
 function CardItem({ item }) {
   const navigation = useNavigation();
+  const [showModal, setShowModal] = useState(false);
   return (
     <Pressable
       onPress={() =>
@@ -49,6 +102,47 @@ function CardItem({ item }) {
       }
       mb={5}
     >
+      <Modal size="xl" isOpen={showModal} onClose={() => setShowModal(false)}>
+        <Modal.Content maxWidth="400px">
+          <Modal.CloseButton />
+          <Modal.Header>Chỉnh sửa kế hoạch</Modal.Header>
+          <Modal.Body>
+            <FormControl>
+              <FormControl.Label>Tên kế hoạch</FormControl.Label>
+              <Input defaultValue={item.name} />
+            </FormControl>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button.Group space={2}>
+              <Button
+                variant="ghost"
+                colorScheme="blueGray"
+                onPress={() => {
+                  setShowModal(false);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                colorScheme="danger"
+                onPress={() => {
+                  setShowModal(false);
+                }}
+              >
+                Xóa
+              </Button>
+              <Button
+                backgroundColor="primary.2"
+                onPress={() => {
+                  setShowModal(false);
+                }}
+              >
+                Chỉnh sửa
+              </Button>
+            </Button.Group>
+          </Modal.Footer>
+        </Modal.Content>
+      </Modal>
       <AspectRatio w="100%" ratio={22 / 9}>
         {item.thumbnail ? (
           <Image
@@ -73,6 +167,15 @@ function CardItem({ item }) {
       <Heading position="absolute" left={3} top={3} color="white">
         {item.name}
       </Heading>
+      <Box position="absolute" left={3} bottom={3}>
+        <IconButton
+          onPress={() => setShowModal(true)}
+          variant="solid"
+          colorScheme="info"
+          size="sm"
+          icon={<Icon as={AntDesign} name="edit" />}
+        />
+      </Box>
       <Heading position="absolute" right={3} bottom={3} color="primary.1">
         {item.count}{" "}
         <Text color="white" fontSize="md">
