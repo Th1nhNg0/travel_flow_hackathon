@@ -9,13 +9,6 @@ export default function ImageView() {
   const image_urls = route?.params?.image_urls;
   return (
     <Box background="black" safeArea h="full" w="full">
-      <IconButton
-        onPress={() => navigation.goBack()}
-        position="absolute"
-        top={5}
-        left={5}
-        icon={<Icon size="2xl" color="white" as={AntDesign} name="close" />}
-      />
       {image_urls && (
         <Swiper dotColor="gray">
           {image_urls?.map((image, index) => (
@@ -29,6 +22,13 @@ export default function ImageView() {
           ))}
         </Swiper>
       )}
+      <IconButton
+        onPress={() => navigation.goBack()}
+        position="absolute"
+        top={5}
+        left={5}
+        icon={<Icon size="2xl" color="white" as={AntDesign} name="close" />}
+      />
     </Box>
   );
 }

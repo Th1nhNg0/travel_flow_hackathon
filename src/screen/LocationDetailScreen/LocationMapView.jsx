@@ -12,7 +12,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 export default function LocationMapView() {
   const navigation = useNavigation();
   const route = useRoute();
-  const location = route.params.location;
+  const { latitude, longitude, address, name } = route.params;
   return (
     <Box safeArea>
       <Box>
@@ -22,8 +22,8 @@ export default function LocationMapView() {
             height: "100%",
           }}
           region={{
-            latitude: location.location.lat,
-            longitude: location.location.lon,
+            latitude,
+            longitude,
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           }}
@@ -32,10 +32,11 @@ export default function LocationMapView() {
         >
           <Marker
             coordinate={{
-              latitude: location.location.lat,
-              longitude: location.location.lon,
+              latitude,
+              longitude,
             }}
-            title={location.summary}
+            title={name}
+            description={address}
           />
         </MapView>
         <IconButton

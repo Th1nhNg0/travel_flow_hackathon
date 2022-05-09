@@ -15,6 +15,12 @@ import {
   Pressable,
   ScrollView,
   Stack,
+  Center,
+  Modal,
+  Input,
+  FormControl,
+  Select,
+  Toast,
 } from "native-base";
 import { AntDesign } from "@native-base/icons";
 import moment from "moment";
@@ -22,17 +28,27 @@ import { LinearGradient } from "expo-linear-gradient";
 import RatingComponent from "../../components/RatingComponent";
 import Swiper from "react-native-swiper";
 import MapView, { Marker } from "react-native-maps";
-import data from "../../mock.json";
+import LocationAPI from "../../api/location";
+import PlanAPI from "../../api/plan";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function DetailView() {
   const { params } = useRoute();
   const { id } = params;
   const [item, setitem] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   useEffect(() => {
-    let item = data.find((item) => item.id === id);
-    setitem(item);
+    LocationAPI.getOneLocation(id).then((res) => {
+      setitem(res);
+    });
   }, []);
-  if (!item) return <Text>Loading...</Text>;
+  if (!item)
+    return (
+      <Center flex={1}>
+        <Text>Loading...</Text>
+      </Center>
+    );
   return (
     <Box h="full" bg="white" p={5} safeArea>
       <ThumbnailComponent item={item} />
@@ -55,7 +71,18 @@ export default function DetailView() {
         py={2}
         left={5}
       >
-        <Button flex={1} ml={2} backgroundColor="primary.1" rounded="xl">
+        <ModalComponent
+          item={item}
+          showModal={showModal}
+          setShowModal={setShowModal}
+        />
+        <Button
+          onPress={() => setShowModal(true)}
+          flex={1}
+          ml={2}
+          backgroundColor="primary.1"
+          rounded="xl"
+        >
           Thêm vào kế hoạch
         </Button>
       </Flex>
@@ -63,14 +90,160 @@ export default function DetailView() {
   );
 }
 
+function ModalComponent({ showModal, setShowModal, item }) {
+  const [plans, setplans] = useState([]);
+  useEffect(() => {
+    PlanAPI.getPlans().then((res) => {
+      setplans(res.plans);
+    });
+  }, []);
+
+  const [planId, setplanId] = useState(null);
+  const [numberOfPeople, setnumberOfPeople] = useState(1);
+  const [date, setDate] = useState(new Date());
+  const [mode, setMode] = useState("date");
+  const [show, setShow] = useState(false);
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    setShow(false);
+    setDate(currentDate);
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode("date");
+  };
+
+  const showTimepicker = () => {
+    showMode("time");
+  };
+
+  function addLocationToPlan() {
+    PlanAPI.addLocationToPlan({
+      date: date,
+      locationId: item.id,
+      numberOfPeople: 1,
+      planId: plans[0].id,
+    })
+      .then(() => {
+        Toast.show({
+          title: "Thêm địa điểm thành công",
+        });
+      })
+      .catch(() => {
+        Toast.show({
+          background: "red.100",
+          title: "Đã xảy ra lỗi",
+        });
+      })
+      .finally(() => {
+        setShowModal(false);
+      });
+  }
+
+  return (
+    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+      <Modal.Content maxWidth="400px">
+        <Modal.CloseButton />
+        <Modal.Header>Thêm địa điểm vào kế hoạch</Modal.Header>
+        <Modal.Body>
+          {show && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode={mode}
+              is24Hour={true}
+              onChange={onChange}
+            />
+          )}
+          <FormControl>
+            <FormControl.Label>Ngày đến</FormControl.Label>
+            <Text
+              onPress={showDatepicker}
+              color="primary.1"
+              fontWeight="bold"
+              fontSize="3xl"
+            >
+              {moment(date).format("DD/MM/YYYY")}
+            </Text>
+          </FormControl>
+          <FormControl>
+            <FormControl.Label>Giờ đến</FormControl.Label>
+            <Text
+              onPress={showTimepicker}
+              color="primary.1"
+              fontWeight="bold"
+              fontSize="3xl"
+            >
+              {moment(date).format("hh:mm")}
+            </Text>
+          </FormControl>
+          <FormControl>
+            <FormControl.Label>Kế hoạch</FormControl.Label>
+            <Select
+              accessibilityLabel="Chọn kế hoạch"
+              selectedValue={planId}
+              onValueChange={(value) => setplanId(value)}
+              placeholder="Chọn kế hoạch"
+            >
+              {plans.length > 0 ? (
+                plans.map((p) => (
+                  <Select.Item label={p.name} value={p.id} key={p.id} />
+                ))
+              ) : (
+                <Select.Item
+                  label="Bạn không có kế hoạch nào, vui lòng tạo kế hoạch trước khi thêm địa điểm"
+                  disabled
+                  value="-1"
+                />
+              )}
+            </Select>
+          </FormControl>
+          <FormControl mt="3">
+            <FormControl.Label>Số lượng</FormControl.Label>
+            <Input
+              value={numberOfPeople}
+              onChangeText={(text) => setnumberOfPeople(text)}
+              keyboardType="numeric"
+              defaultValue="1"
+            />
+          </FormControl>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button.Group space={2}>
+            <Button
+              variant="ghost"
+              colorScheme="blueGray"
+              onPress={() => {
+                setShowModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onPress={addLocationToPlan}>Add</Button>
+          </Button.Group>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal>
+  );
+}
+
 function MapComponent({ item }) {
   const navigation = useNavigation();
-  const location = item.location;
-  location.location.lat = parseFloat(location.location.lat);
-  location.location.lon = parseFloat(location.location.lon);
   return (
     <Pressable
-      onPress={() => navigation.navigate("LocationMapView", { location })}
+      onPress={() =>
+        navigation.navigate("LocationMapView", {
+          latitude: item.latitude,
+          longitude: item.longitude,
+          name: item.name,
+          address: item.address,
+        })
+      }
     >
       <Heading size="sm" mb={2}>
         Địa chỉ
@@ -83,16 +256,16 @@ function MapComponent({ item }) {
           rotateEnabled={false}
           cacheEnabled={true}
           initialRegion={{
-            latitude: location.location.lat,
-            longitude: location.location.lon,
+            latitude: item.latitude,
+            longitude: item.longitude,
             latitudeDelta: 0.00922,
             longitudeDelta: 0.01639111111,
           }}
         >
           <Marker
             coordinate={{
-              latitude: location.location.lat,
-              longitude: location.location.lon,
+              latitude: item.latitude,
+              longitude: item.longitude,
             }}
           />
         </MapView>
@@ -139,7 +312,7 @@ function InfoComponent({ item }) {
   return (
     <VStack space={5}>
       <Box>
-        <RatingComponent rating={item.review.score} count={item.review.count} />
+        <RatingComponent rating={item.review} count={item._count.Review} />
         <Text>
           Sức chứa tối đa:{" "}
           <Text fontWeight="bold" fontSize="md" color="primary.2">
@@ -153,7 +326,7 @@ function InfoComponent({ item }) {
         <HStack space={5} alignItems="center" justifyContent="center">
           <Box>
             <Heading textAlign="center" size="xl" color="primary.2">
-              {item.count}
+              {item.intendedPeople}
             </Heading>
             <Text textAlign="center" color="blueGray.500">
               số người dự định đến
@@ -161,7 +334,7 @@ function InfoComponent({ item }) {
           </Box>
           <Box>
             <Heading textAlign="center" size="xl" color="primary.1">
-              {Math.floor(Math.random() * item.count)}
+              {item.highIntendedPeople}
             </Heading>
             <Text textAlign="center" color="blueGray.500">
               số người ít nhất sẽ đến
@@ -178,7 +351,7 @@ function InfoComponent({ item }) {
 
 function ThumbnailComponent({ item }) {
   const navigation = useNavigation();
-  const image_urls = item.imageUrls;
+  const image_urls = item.LocationImages.map((e) => e.image_url);
   return (
     <Box>
       <Pressable

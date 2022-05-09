@@ -36,59 +36,61 @@ export default function App() {
       <NavigationContainer>
         <AuthContextProvider>
           <AuthContext.Consumer>
-            {({ isLoggedIn }) => (
-              <Stack.Navigator initialRouteName="Dashboard">
-                {!isLoggedIn ? (
-                  <>
-                    <Stack.Screen
-                      options={{
-                        headerShown: false,
-                      }}
-                      name="SignIn"
-                      component={SignInScreen}
-                    />
-                    <Stack.Screen
-                      options={{
-                        headerShown: false,
-                      }}
-                      name="SignUp"
-                      component={SignUpScreen}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <Stack.Screen
-                      options={{
-                        headerShown: false,
-                      }}
-                      name="Dashboard"
-                      component={DashboardScreen}
-                    />
-                    <Stack.Screen
-                      name="UserAndSettings"
-                      options={{
-                        headerTitle: "Người dùng và cài đặt",
-                      }}
-                      component={UserAndSettingsScreen}
-                    />
-                    <Stack.Screen
-                      options={{
-                        headerShown: false,
-                      }}
-                      name="LocationDetail"
-                      component={LocationDetailScreen}
-                    />
-                    <Stack.Screen
-                      options={{
-                        headerShown: false,
-                      }}
-                      name="PlanDetailScreen"
-                      component={PlanDetailScreen}
-                    />
-                  </>
-                )}
-              </Stack.Navigator>
-            )}
+            {({ isLoggedIn, isLoading }) =>
+              isLoading ? null : (
+                <Stack.Navigator initialRouteName="Dashboard">
+                  {!isLoggedIn ? (
+                    <>
+                      <Stack.Screen
+                        options={{
+                          headerShown: false,
+                        }}
+                        name="SignIn"
+                        component={SignInScreen}
+                      />
+                      <Stack.Screen
+                        options={{
+                          headerShown: false,
+                        }}
+                        name="SignUp"
+                        component={SignUpScreen}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Stack.Screen
+                        options={{
+                          headerShown: false,
+                        }}
+                        name="Dashboard"
+                        component={DashboardScreen}
+                      />
+                      <Stack.Screen
+                        name="UserAndSettings"
+                        options={{
+                          headerTitle: "Người dùng và cài đặt",
+                        }}
+                        component={UserAndSettingsScreen}
+                      />
+                      <Stack.Screen
+                        options={{
+                          headerShown: false,
+                        }}
+                        name="LocationDetail"
+                        component={LocationDetailScreen}
+                      />
+                      <Stack.Screen
+                        options={{
+                          headerShown: false,
+                        }}
+                        name="PlanDetailScreen"
+                        component={PlanDetailScreen}
+                      />
+                    </>
+                  )}
+                </Stack.Navigator>
+              )
+            }
           </AuthContext.Consumer>
         </AuthContextProvider>
       </NavigationContainer>

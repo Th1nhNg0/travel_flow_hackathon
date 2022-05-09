@@ -6,17 +6,25 @@ import {
   Heading,
   HStack,
   Input,
-  Link,
   Text,
   VStack,
 } from "native-base";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function SignInScreen() {
   const { login } = useContext(AuthContext);
   const navigation = useNavigation();
+  const [isLoading, setisLoading] = useState(false);
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  function _login() {
+    setisLoading(true);
+    login({ email, password }).finally(() => {
+      setisLoading(false);
+    });
+  }
   return (
     <Center w="100%" h="100%">
       <Box safeArea px="4" w="90%">
@@ -29,12 +37,27 @@ export default function SignInScreen() {
 
         <VStack space={3} mt="5">
           <FormControl>
-            <Input placeholder="Email" type="text" />
+            <Input
+              placeholder="Email"
+              type="text"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={(text) => setemail(text)}
+            />
           </FormControl>
           <FormControl>
-            <Input placeholder="Password" type="password" />
+            <Input
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChangeText={(text) => setpassword(text)}
+            />
           </FormControl>
-          <Button backgroundColor="primary.1" onPress={(e) => login()}>
+          <Button
+            backgroundColor="primary.1"
+            isLoading={isLoading}
+            onPress={_login}
+          >
             Continue
           </Button>
           <Text color="primary.2" fontWeight="semibold" fontSize="sm">

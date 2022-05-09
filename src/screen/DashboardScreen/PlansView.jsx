@@ -14,29 +14,48 @@ import {
   FormControl,
   Input,
   Button,
-  useDisclose,
-  Actionsheet,
+  Toast,
+  Center,
 } from "native-base";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AntDesign } from "@native-base/icons";
-
-const data = [
-  {
-    id: 0,
-    name: "Đà Lạt 30/4 - 4/5",
-    count: 8,
-    thumbnail:
-      "https://i.picsum.photos/id/61/600/600.jpg?hmac=xO4nHk0Jyt6MeKsA3Ja7ZibPMoPSpMh6O9TsTyBbpC4",
-  },
-  {
-    id: 1,
-    name: "Đà Nẵng 1/6 - 6/6",
-    count: 16,
-  },
-];
+import PlanAPI from "../../api/plan";
 
 export default function PlansScreen() {
   const [showModal, setShowModal] = useState(false);
+  const [data, setdata] = useState([]);
+  const [loading, setloading] = useState(false);
+  function fetchData() {
+    setloading(true);
+    PlanAPI.getPlans()
+      .then((res) => {
+        setdata(res.plans);
+      })
+      .finally(() => setloading(false));
+  }
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const [newPlanName, setnewPlanName] = useState("");
+
+  function createNewPlan() {
+    PlanAPI.createPlan({ name: newPlanName }).then(() => {
+      setShowModal(false);
+      setnewPlanName("");
+      fetchData();
+      Toast.show({
+        title: "Tạo kế hoạch thành công",
+      });
+    });
+  }
+  if (loading) {
+    return (
+      <Center flex={1}>
+        <Text>Loading...</Text>
+      </Center>
+    );
+  }
   return (
     <Box px={5} py={3}>
       <Modal size="xl" isOpen={showModal} onClose={() => setShowModal(false)}>
@@ -46,7 +65,10 @@ export default function PlansScreen() {
           <Modal.Body>
             <FormControl>
               <FormControl.Label>Tên kế hoạch</FormControl.Label>
-              <Input />
+              <Input
+                value={newPlanName}
+                onChangeText={(text) => setnewPlanName(text)}
+              />
             </FormControl>
           </Modal.Body>
           <Modal.Footer>
@@ -60,13 +82,7 @@ export default function PlansScreen() {
               >
                 Hủy
               </Button>
-              <Button
-                onPress={() => {
-                  setShowModal(false);
-                }}
-              >
-                Tạo
-              </Button>
+              <Button onPress={createNewPlan}>Tạo</Button>
             </Button.Group>
           </Modal.Footer>
         </Modal.Content>
@@ -83,21 +99,58 @@ export default function PlansScreen() {
       </HStack>
       <FlatList
         data={data}
-        renderItem={({ item }) => <CardItem item={item} />}
+        renderItem={({ item }) => (
+          <CardItem item={item} fetchData={fetchData} />
+        )}
         keyExtractor={(item) => item.id}
       />
     </Box>
   );
 }
 
-function CardItem({ item }) {
+function CardItem({ item, fetchData }) {
   const navigation = useNavigation();
+  const [newName, setnewName] = useState(item.name);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
+
+  function updatePlan() {
+    setisLoading(true);
+    PlanAPI.updatePlan({ id: item.id, name: newName })
+      .then(() => {
+        setShowModal(false);
+        fetchData();
+        Toast.show({
+          title: "Cập nhật thành công",
+        });
+      })
+      .finally(() => {
+        setisLoading(false);
+      });
+  }
+  function deletePlan() {
+    setisLoading(true);
+    PlanAPI.deletePlan(item.id)
+      .then(() => {
+        setShowModal(false);
+        Toast.show({
+          title: "Xóa kế hoạch thành công",
+        });
+        fetchData();
+      })
+      .finally(() => {
+        setisLoading(false);
+      });
+  }
   return (
     <Pressable
       onPress={() =>
         navigation.navigate("PlanDetailScreen", {
           screen: "DetailView",
+          params: {
+            id: item.id,
+            headerTitle: item.name,
+          },
         })
       }
       mb={5}
@@ -109,7 +162,10 @@ function CardItem({ item }) {
           <Modal.Body>
             <FormControl>
               <FormControl.Label>Tên kế hoạch</FormControl.Label>
-              <Input defaultValue={item.name} />
+              <Input
+                value={newName}
+                onChangeText={(text) => setnewName(text)}
+              />
             </FormControl>
           </Modal.Body>
           <Modal.Footer>
@@ -124,18 +180,16 @@ function CardItem({ item }) {
                 Hủy
               </Button>
               <Button
+                isLoading={isLoading}
                 colorScheme="danger"
-                onPress={() => {
-                  setShowModal(false);
-                }}
+                onPress={deletePlan}
               >
                 Xóa
               </Button>
               <Button
+                isLoading={isLoading}
                 backgroundColor="primary.2"
-                onPress={() => {
-                  setShowModal(false);
-                }}
+                onPress={updatePlan}
               >
                 Chỉnh sửa
               </Button>
@@ -162,7 +216,7 @@ function CardItem({ item }) {
         w="full"
         rounded="xl"
         position="absolute"
-        background="rgba(55, 253, 78 ,0.15)"
+        background="rgba(0, 0, 0 ,0.25)"
       ></Box>
       <Heading position="absolute" left={3} top={3} color="white">
         {item.name}
@@ -177,7 +231,7 @@ function CardItem({ item }) {
         />
       </Box>
       <Heading position="absolute" right={3} bottom={3} color="primary.1">
-        {item.count}{" "}
+        {item._count.PlanLocation}{" "}
         <Text color="white" fontSize="md">
           địa điểm
         </Text>

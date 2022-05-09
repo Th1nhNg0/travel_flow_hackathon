@@ -10,13 +10,23 @@ import {
   Text,
   VStack,
 } from "native-base";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function SignInScreen() {
-  const { login } = useContext(AuthContext);
+  const { register } = useContext(AuthContext);
+  const [isLoading, setisLoading] = useState(false);
   const navigation = useNavigation();
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const [name, setname] = useState("");
+  function _register() {
+    setisLoading(true);
+    register({ email, name, password }).finally(() => {
+      setisLoading(false);
+    });
+  }
   return (
     <Center w="100%" h="100%">
       <Box safeArea px="4" w="90%">
@@ -29,15 +39,34 @@ export default function SignInScreen() {
 
         <VStack space={3} mt="5">
           <FormControl>
-            <Input placeholder="Email" type="text" />
+            <Input
+              placeholder="Email"
+              type="text"
+              value={email}
+              onChangeText={(text) => setemail(text)}
+            />
           </FormControl>
           <FormControl>
-            <Input placeholder="Fullname" type="text" />
+            <Input
+              placeholder="Fullname"
+              type="text"
+              value={name}
+              onChangeText={(text) => setname(text)}
+            />
           </FormControl>
           <FormControl>
-            <Input placeholder="Password" type="password" />
+            <Input
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChangeText={(text) => setpassword(text)}
+            />
           </FormControl>
-          <Button backgroundColor="primary.1" onPress={() => login()}>
+          <Button
+            isLoading={isLoading}
+            backgroundColor="primary.1"
+            onPress={_register}
+          >
             Continue
           </Button>
 

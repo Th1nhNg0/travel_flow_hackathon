@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   Box,
   Heading,
@@ -16,140 +16,96 @@ import {
   Input,
   Button,
   useToast,
+  Center,
+  Image,
+  Select,
+  Toast,
 } from "native-base";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import PlanAPI from "../../api/plan";
 import moment from "moment";
-import mockdata from "../../mock.json";
+import LocationAPI from "../../api/location";
 
 export default function DetailView() {
   const navigation = useNavigation();
-  const data = mockdata
-    .sort((a, b) => Math.random() - 0.5)
-    .slice(0, 10)
-    .map((e) => ({
-      ...e,
-      date: new Date(
-        new Date().getTime() + Math.random() * (1000 * 60 * 60 * 24 * 10)
-      ),
-    }))
-    .sort((a, b) => a.date - b.date);
-
+  const { params } = useRoute();
+  const { id, headerTitle } = params;
+  const [item, setitem] = useState(null);
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: "Đà Lạt 30/4 - 4/5",
+      headerTitle: headerTitle,
     });
-  }, []);
+    PlanAPI.getPlan(id).then((res) => {
+      setitem(res);
+    });
+  }, [id]);
 
-  return (
+  return item && item.PlanLocation.length ? (
     <Box h="full" bg="white" px={5} safeArea>
       <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
+        data={item.PlanLocation}
+        keyExtractor={(e) => e.id}
         renderItem={({ item }) => <ItemComponent item={item} />}
       />
     </Box>
+  ) : (
+    <Center px={10} flex={1}>
+      <Box>
+        <Image
+          mb={5}
+          resizeMode="contain"
+          source={require("../../../assets/images/sad.png")}
+          alt="No items"
+        />
+      </Box>
+      <Heading textAlign="center" fontSize="md" color="trueGray.500">
+        Hiện tại không có địa điểm nào trong kế hoạch
+      </Heading>
+    </Center>
   );
 }
 
 const ItemComponent = ({ item }) => {
-  let color = "success";
-  let text = "Bình thường";
-  if (item.count < 1000) {
-    color = "info";
-    text = "Ít người";
-  }
-  if (item.count > 5000) {
-    color = "danger";
-    text = "Quá tải";
-  }
+  const [data, setdata] = useState(null);
   const toast = useToast();
   const navigation = useNavigation();
   const { isOpen, onOpen, onClose } = useDisclose();
   const [showModal, setShowModal] = useState(false);
+  async function fetch() {
+    const res = await LocationAPI.getOneLocation(item.locationId);
+    setdata(res);
+    console.log(res);
+  }
+  useEffect(() => {
+    fetch();
+  }, []);
 
-  const [date, setDate] = useState(new Date(1598051730000));
-  const [mode, setMode] = useState("date");
-  const [show, setShow] = useState(false);
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate;
-    setShow(false);
-    setDate(currentDate);
-  };
+  if (!data) return <Text>Loading...</Text>;
+  let color = "success";
+  let text = "Bình thường";
+  if (data.intendedPeople < 100) {
+    color = "info";
+    text = "Ít người";
+  }
+  if (data.intendedPeople > 1000) {
+    color = "danger";
+    text = "Quá tải";
+  }
 
-  const showMode = (currentMode) => {
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode("date");
-  };
-
-  const showTimepicker = () => {
-    showMode("time");
-  };
   return (
     <Pressable mb={3} onPress={onOpen}>
       <HStack background="trueGray.100" rounded="2xl">
-        <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-          <Modal.Content maxWidth="400px">
-            <Modal.CloseButton />
-            <Modal.Header>{item.name}</Modal.Header>
-            <Modal.Body>
-              {show && (
-                <DateTimePicker
-                  testID="dateTimePicker"
-                  value={date}
-                  mode={mode}
-                  is24Hour={true}
-                  onChange={onChange}
-                />
-              )}
-              <FormControl>
-                <FormControl.Label>Ngày đến</FormControl.Label>
-                <Text fontSize="3xl" onPress={showDatepicker}>
-                  {moment(date).format("DD/MM/YYYY")}
-                </Text>
-              </FormControl>
-              <FormControl>
-                <FormControl.Label>Giờ đến</FormControl.Label>
-                <Text fontSize="3xl" onPress={showTimepicker}>
-                  {moment(date).format("hh:mm")}
-                </Text>
-              </FormControl>
-              <FormControl mt="3">
-                <FormControl.Label>Số lượng</FormControl.Label>
-                <Input keyboardType="numeric" defaultValue="1" />
-              </FormControl>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button.Group space={2}>
-                <Button
-                  variant="ghost"
-                  colorScheme="blueGray"
-                  onPress={() => {
-                    setShowModal(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onPress={() => {
-                    setShowModal(false);
-                  }}
-                >
-                  Save
-                </Button>
-              </Button.Group>
-            </Modal.Footer>
-          </Modal.Content>
-        </Modal>
+        <ModalComponent
+          showModal={showModal}
+          setShowModal={setShowModal}
+          item={item}
+          data={data}
+        />
         <Actionsheet isOpen={isOpen} onClose={onClose}>
           <Actionsheet.Content>
             <Box w="100%" h={60} px={4} justifyContent="center">
               <Text fontSize="16" fontWeight="bold" color="gray.500">
-                {item.name}
+                {data.name}
               </Text>
             </Box>
             <Actionsheet.Item
@@ -212,9 +168,12 @@ const ItemComponent = ({ item }) => {
             isTruncated
             noOfLines={2}
           >
-            {item.name}
+            {data.name}
           </Heading>
-          <HStack>
+          <HStack space={2}>
+            <Badge _text={{ fontSize: "2xs" }} colorScheme="indigo">
+              {item.numberOfPeople + " người"}
+            </Badge>
             <Badge _text={{ fontSize: "2xs" }} colorScheme={color}>
               {text}
             </Badge>
@@ -224,3 +183,114 @@ const ItemComponent = ({ item }) => {
     </Pressable>
   );
 };
+
+function ModalComponent({ showModal, setShowModal, item, data }) {
+  const [numberOfPeople, setnumberOfPeople] = useState(item.numberOfPeople);
+  const [date, setDate] = useState(new Date(item.date));
+  const [mode, setMode] = useState("date");
+  const [show, setShow] = useState(false);
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    setShow(false);
+    setDate(currentDate);
+  };
+
+  const showMode = (currentMode) => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode("date");
+  };
+
+  const showTimepicker = () => {
+    showMode("time");
+  };
+
+  function editLocationInPlan() {
+    PlanAPI.editLocationInPlan({
+      id: item.id,
+      numberOfPeople,
+      date: date,
+    })
+      .then(() => {
+        Toast.show({
+          title: "Sửa thành công",
+        });
+      })
+      .catch(() => {
+        Toast.show({
+          title: "Sửa thất bại",
+        });
+      })
+      .finally(() => {
+        setShowModal(false);
+      });
+  }
+
+  return (
+    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+      <Modal.Content maxWidth="400px">
+        <Modal.CloseButton />
+        <Modal.Header>{data.name}</Modal.Header>
+        <Modal.Body>
+          {show && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode={mode}
+              is24Hour={true}
+              onChange={onChange}
+            />
+          )}
+          <FormControl>
+            <FormControl.Label>Ngày đến</FormControl.Label>
+            <Text
+              onPress={showDatepicker}
+              color="primary.1"
+              fontWeight="bold"
+              fontSize="3xl"
+            >
+              {moment(date).format("DD/MM/YYYY")}
+            </Text>
+          </FormControl>
+          <FormControl>
+            <FormControl.Label>Giờ đến</FormControl.Label>
+            <Text
+              onPress={showTimepicker}
+              color="primary.1"
+              fontWeight="bold"
+              fontSize="3xl"
+            >
+              {moment(date).format("hh:mm")}
+            </Text>
+          </FormControl>
+          <FormControl mt="3">
+            <FormControl.Label>Số lượng</FormControl.Label>
+            <Input
+              value={numberOfPeople}
+              onChangeText={(text) => setnumberOfPeople(text)}
+              keyboardType="numeric"
+              defaultValue="1"
+            />
+          </FormControl>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button.Group space={2}>
+            <Button
+              variant="ghost"
+              colorScheme="blueGray"
+              onPress={() => {
+                setShowModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onPress={editLocationInPlan}>Edit</Button>
+          </Button.Group>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal>
+  );
+}

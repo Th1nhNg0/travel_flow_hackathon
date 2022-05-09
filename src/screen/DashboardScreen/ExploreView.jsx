@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   AspectRatio,
   Box,
+  Button,
   Center,
   FlatList,
   Heading,
@@ -16,28 +17,41 @@ import {
 import { AntDesign } from "@native-base/icons";
 import { useNavigation } from "@react-navigation/native";
 import RatingComponent from "../../components/RatingComponent";
-import data from "../../mock.json";
 import useDebounce from "../../components/useDebounce";
+import LocationAPI from "../../api/location";
 
 export default function ExploreScreen() {
   const [search, setsearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-
-  const [filteredData, setfilteredData] = useState(data);
+  const [data, setdata] = useState([]);
+  const [page, setpage] = useState(1);
+  const [isLoading, setisLoading] = useState(false);
   const flatListRef = React.useRef();
   const navigation = useNavigation();
 
   useEffect(() => {
+    setisLoading(true);
+    LocationAPI.getLocation(page).then((res) => {
+      setdata((old) => [...old, ...res.locations]);
+      setisLoading(false);
+    });
+  }, [page]);
+  useEffect(() => {
     setsearch("");
   }, [navigation]);
-  useEffect(() => {
-    setfilteredData(
-      data.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-      )
-    );
-    flatListRef.current.scrollToOffset({ x: 0, y: 0, animated: true });
-  }, [debouncedSearch]);
+
+  function loadMore() {
+    setpage(page + 1);
+  }
+
+  // useEffect(() => {
+  //   setfilteredData(
+  //     data.filter((item) =>
+  //       item.name.toLowerCase().includes(search.toLowerCase())
+  //     )
+  //   );
+  //   flatListRef.current.scrollToOffset({ x: 0, y: 0, animated: true });
+  // }, [debouncedSearch]);
 
   return (
     <Box backgroundColor="white" height="full">
@@ -68,11 +82,19 @@ export default function ExploreScreen() {
         ref={flatListRef}
         px={5}
         mt={5}
-        data={filteredData}
+        data={data}
         renderItem={({ item }) => <CardItem item={item} />}
         initialNumToRender={10}
-        keyExtractor={(item) => item.id}
-        windowSize={3}
+        ListFooterComponent={
+          <Button
+            mb={5}
+            onPress={loadMore}
+            backgroundColor="primary.1"
+            isLoading={isLoading}
+          >
+            Load more
+          </Button>
+        }
       />
     </Box>
   );
@@ -80,6 +102,16 @@ export default function ExploreScreen() {
 
 const CardItem = ({ item }) => {
   const navigation = useNavigation();
+  let color = "green.500";
+  let text = "Bình thường";
+  if (item.intendedPeople < 100) {
+    color = "blue.500";
+    text = "Ít người";
+  }
+  if (item.intendedPeople > 1000) {
+    color = "red.500";
+    text = "Quá tải";
+  }
   return (
     <Pressable
       mb={5}
@@ -109,7 +141,7 @@ const CardItem = ({ item }) => {
             />
           </AspectRatio>
           <Center
-            bg={item.count > 300 ? "red.400" : "green.400"}
+            bg={color}
             _text={{
               color: "warmGray.50",
               fontWeight: "700",
@@ -120,20 +152,17 @@ const CardItem = ({ item }) => {
             px="3"
             py="1.5"
           >
-            {item.count > 300 ? "HOT" : "Bình thường"}
+            {text}
           </Center>
         </Box>
         <Stack p="4">
           <Heading size="md" ml="-1" isTruncated noOfLines={2}>
             {item.name}
           </Heading>
-          <RatingComponent
-            rating={item.review.score}
-            count={item.review.count}
-          />
+          <RatingComponent rating={item.review} count={item._count.Review} />
           <Text fontWeight="400">
             <Text fontWeight="bold" color="primary.1">
-              {item.count}
+              {item.intendedPeople}
             </Text>{" "}
             người sẽ đến
           </Text>
