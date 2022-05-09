@@ -31,13 +31,16 @@ export default function DetailView() {
   const { params } = useRoute();
   const { id, headerTitle } = params;
   const [item, setitem] = useState(null);
+  function big_fetch() {
+    PlanAPI.getPlan(id).then((res) => {
+      setitem(res);
+    });
+  }
   useEffect(() => {
     navigation.setOptions({
       headerTitle: headerTitle,
     });
-    PlanAPI.getPlan(id).then((res) => {
-      setitem(res);
-    });
+    big_fetch();
   }, [id]);
 
   return item && item.PlanLocation.length ? (
@@ -45,7 +48,9 @@ export default function DetailView() {
       <FlatList
         data={item.PlanLocation}
         keyExtractor={(e) => e.id}
-        renderItem={({ item }) => <ItemComponent item={item} />}
+        renderItem={({ item }) => (
+          <ItemComponent item={item} big_fetch={big_fetch} />
+        )}
       />
     </Box>
   ) : (
@@ -65,22 +70,24 @@ export default function DetailView() {
   );
 }
 
-const ItemComponent = ({ item }) => {
+const ItemComponent = ({ item, big_fetch }) => {
   const [data, setdata] = useState(null);
   const toast = useToast();
   const navigation = useNavigation();
+  const [isLoading, setisLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclose();
   const [showModal, setShowModal] = useState(false);
   async function fetch() {
+    setisLoading(true);
     const res = await LocationAPI.getOneLocation(item.locationId);
     setdata(res);
-    console.log(res);
+    setisLoading(false);
   }
   useEffect(() => {
     fetch();
   }, []);
 
-  if (!data) return <Text>Loading...</Text>;
+  if (isLoading || !data) return <Text>Loading...</Text>;
   let color = "success";
   let text = "Bình thường";
   if (data.intendedPeople < 100) {
@@ -100,6 +107,7 @@ const ItemComponent = ({ item }) => {
           setShowModal={setShowModal}
           item={item}
           data={data}
+          fetch={big_fetch}
         />
         <Actionsheet isOpen={isOpen} onClose={onClose}>
           <Actionsheet.Content>
@@ -113,7 +121,7 @@ const ItemComponent = ({ item }) => {
                 navigation.navigate("LocationDetail", {
                   screen: "DetailView",
                   params: {
-                    id: item.id,
+                    id: data.id,
                   },
                 })
               }
@@ -184,7 +192,7 @@ const ItemComponent = ({ item }) => {
   );
 };
 
-function ModalComponent({ showModal, setShowModal, item, data }) {
+function ModalComponent({ showModal, setShowModal, item, data, fetch }) {
   const [numberOfPeople, setnumberOfPeople] = useState(item.numberOfPeople);
   const [date, setDate] = useState(new Date(item.date));
   const [mode, setMode] = useState("date");
@@ -213,13 +221,16 @@ function ModalComponent({ showModal, setShowModal, item, data }) {
       id: item.id,
       numberOfPeople,
       date: date,
+      planId: item.planId,
     })
       .then(() => {
         Toast.show({
           title: "Sửa thành công",
         });
+        fetch();
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log(e);
         Toast.show({
           title: "Sửa thất bại",
         });

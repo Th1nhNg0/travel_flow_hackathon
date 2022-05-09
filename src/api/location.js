@@ -1,7 +1,9 @@
 import axiosInstance from "./fetch";
 
-async function getLocation(page) {
-  const result = await axiosInstance.get(`/location?page=${page}`);
+async function getLocations({ page, search }) {
+  const result = await axiosInstance.get(
+    `/location?page=${page}&search=${encodeURI(search)}`
+  );
   const location = result.data;
   return location;
 }
@@ -12,4 +14,4 @@ async function getOneLocation(id) {
   return location;
 }
 
-export default { getLocation, getOneLocation };
+export default { getLocations, getOneLocation };

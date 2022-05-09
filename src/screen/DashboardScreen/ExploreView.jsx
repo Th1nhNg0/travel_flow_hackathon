@@ -31,11 +31,16 @@ export default function ExploreScreen() {
 
   useEffect(() => {
     setisLoading(true);
-    LocationAPI.getLocation(page).then((res) => {
+    LocationAPI.getLocations({ page, search: search }).then((res) => {
       setdata((old) => [...old, ...res.locations]);
       setisLoading(false);
     });
-  }, [page]);
+  }, [page, debouncedSearch]);
+  useEffect(() => {
+    flatListRef.current.scrollToOffset({ x: 0, y: 0, animated: true });
+    setpage(1);
+    setdata([]);
+  }, [debouncedSearch]);
   useEffect(() => {
     setsearch("");
   }, [navigation]);
@@ -43,15 +48,6 @@ export default function ExploreScreen() {
   function loadMore() {
     setpage(page + 1);
   }
-
-  // useEffect(() => {
-  //   setfilteredData(
-  //     data.filter((item) =>
-  //       item.name.toLowerCase().includes(search.toLowerCase())
-  //     )
-  //   );
-  //   flatListRef.current.scrollToOffset({ x: 0, y: 0, animated: true });
-  // }, [debouncedSearch]);
 
   return (
     <Box backgroundColor="white" height="full">

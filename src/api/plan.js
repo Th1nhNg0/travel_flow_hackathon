@@ -38,8 +38,8 @@ async function addLocationToPlan({ planId, locationId, date, numberOfPeople }) {
   const addedLocation = result.data;
   return addedLocation;
 }
-async function editLocationInPlan({ id, numberOfPeople, date: date }) {
-  const result = await axiosInstance.put(`/plan/location/${id}`, {
+async function editLocationInPlan({ id, numberOfPeople, date, planId }) {
+  const result = await axiosInstance.put(`/plan/${planId}/location/${id}`, {
     numberOfPeople,
     date,
   });
