@@ -309,6 +309,11 @@ function AboutComponent() {
 }
 
 function InfoComponent({ item }) {
+  function FeatureNotReady() {
+    Toast.show({
+      title: "Feature not ready",
+    });
+  }
   return (
     <VStack space={5}>
       <Box>
@@ -341,7 +346,12 @@ function InfoComponent({ item }) {
             </Text>
           </Box>
         </HStack>
-        <Button rounded="xl" size="md" background="primary.2">
+        <Button
+          rounded="xl"
+          size="md"
+          background="primary.2"
+          onPress={FeatureNotReady}
+        >
           Xem chi tiết
         </Button>
       </VStack>

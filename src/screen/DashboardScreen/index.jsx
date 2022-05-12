@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { Text, Avatar, View, Icon, Pressable, Image, Box } from "native-base";
@@ -7,11 +7,13 @@ import HomeView from "./HomeView";
 import ExploreView from "./ExploreView";
 import PlansScreen from "./PlansView";
 import NotificationsScreen from "./NotificationsScreen";
+import { AuthContext } from "../../context/AuthContext";
 
 const Tab = createBottomTabNavigator();
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -32,7 +34,7 @@ export default function DashboardScreen() {
                 mr={3}
                 size="sm"
                 source={{
-                  uri: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
+                  uri: `https://avatars.dicebear.com/api/micah/${user.email}.png`,
                 }}
               />
             </Pressable>
@@ -40,7 +42,7 @@ export default function DashboardScreen() {
         },
       }}
     >
-      <Tab.Screen
+      {/* <Tab.Screen
         options={{
           tabBarIcon: ({ color, size }) => {
             return <Icon as={Feather} name="home" color={color} size={size} />;
@@ -48,7 +50,7 @@ export default function DashboardScreen() {
         }}
         name="Home"
         component={HomeView}
-      />
+      /> */}
       <Tab.Screen
         options={{
           tabBarIcon: ({ color, size }) => {
