@@ -34,7 +34,6 @@ export const AuthContextProvider = ({ children }) => {
         if (token) {
           UserAPI.getUser().then((user) => {
             setUser(user);
-            setisLoading(false);
           });
         }
       })
