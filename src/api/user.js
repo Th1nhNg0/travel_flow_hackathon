@@ -24,7 +24,7 @@ async function signIn({ email, password }) {
     });
     const token = result.data.token;
     const user = result.data.user;
-    axiosInstance.setToken(token);
+    await axiosInstance.setToken(token);
     return user;
   } catch {
     throw new Error("Invalid email or password");
