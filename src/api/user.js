@@ -9,7 +9,7 @@ async function signUp({ name, email, password }) {
     });
     const token = result.data.token;
     const user = result.data.user;
-    axiosInstance.setToken(token);
+    await axiosInstance.setToken(token);
     return user;
   } catch (e) {
     throw new Error("Invalid email or password");

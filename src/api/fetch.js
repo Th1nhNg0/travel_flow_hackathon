@@ -15,7 +15,7 @@ async function getLocalToken() {
   return token;
 }
 
-instance.setToken = (token) => {
+instance.setToken = async (token) => {
   instance.defaults.headers["Authorization"] = `Bearer ${token}`;
   await AsyncStorage.setItem("token", token);
 };
@@ -23,7 +23,7 @@ instance.setToken = (token) => {
 instance.interceptors.request.use(async (config) => {
   const token = await getLocalToken();
   if (token) {
-    instance.setToken(token);
+    await instance.setToken(token);
   }
   return config;
 });
