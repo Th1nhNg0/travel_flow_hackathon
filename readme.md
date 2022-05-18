@@ -1,11 +1,8 @@
-- Địa điểm
+# UIT WEB ADVENTURE 2022
 
-  - Số người dự định đến
-  - Mã ưu đãi
+THIS PROJECT IS THE APP OF OUR TEAM'S PROJECT. FIRST PRIZE
 
-- Review
-
-- User
-  - Địa điểm yêu thích
-  - Danh sách kế hoạch
-    - Địa điểm trong danh sách + thời gian đến
+BACKEND: https://github.com/Th1nhNg0/travel-flow-backend
+FRONTEND: https://github.com/shoxie/travel-flow-website
+APP: https://github.com/Th1nhNg0/travel_flow_hackathon
+SLIDE: https://github.com/Th1nhNg0/travel_flow_hackathon/blob/main/TravelFlow%20.pdf
